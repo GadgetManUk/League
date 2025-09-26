@@ -1,0 +1,55 @@
+{
+    "currentData": [
+        {
+            "store": "PADIHAM",
+            "participation": 16.7,
+            "areaCode": "A033",
+            "lastRank": 2,
+            "movement": 1
+        },
+        {
+            "store": "KIRKHAM",
+            "participation": 15.3,
+            "areaCode": "A034",
+            "lastRank": 1,
+            "movement": -1
+        },
+        {
+            "store": "WELSHPOOL",
+            "participation": 14.7,
+            "areaCode": "A035",
+            "lastRank": 4,
+            "movement": 1
+        }
+    ],
+    "previousData": [
+        {
+            "store": "KIRKHAM",
+            "participation": 15.1,
+            "areaCode": "A034",
+            "rank": 1
+        },
+        {
+            "store": "PADIHAM",
+            "participation": 14.8,
+            "areaCode": "A033",
+            "rank": 2
+        },
+        {
+            "store": "WELSHPOOL",
+            "participation": 13.9,
+            "areaCode": "A035",
+            "rank": 4
+        }
+    ],
+    "uploadHistory": [
+        {
+            "fileName": "Initial Data",
+            "fileSize": 1024,
+            "uploadTime": "2024-09-26T13:00:00Z",
+            "recordCount": 3
+        }
+    ],
+    "lastUpdated": "2024-09-26T13:00:00Z",
+    "daysData": 1
+}
