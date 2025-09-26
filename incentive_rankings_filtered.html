@@ -234,6 +234,56 @@
             background: rgba(108, 117, 125, 0.1);
             color: #6c757d;
         }
+
+        /* Admin Styles */
+        .admin-notice {
+            background: linear-gradient(45deg, var(--success-color), #27ae60);
+            color: white;
+            padding: 15px 25px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .admin-controls {
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .admin-controls.active {
+            display: block;
+        }
+
+        .admin-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: background-color 0.2s;
+        }
+
+        .admin-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        input[type="file"] {
+            padding: 8px;
+            border: 2px dashed var(--primary-color);
+            border-radius: 8px;
+            background: var(--light-bg);
+            font-size: 14px;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -248,6 +298,33 @@
         </div>
         
         <div class="filter-notice" style="background: linear-gradient(45deg, var(--warning-color), #e0a800);">🎯 Movement shows change after adding Peak - Dewalt incentive (5th incentive)</div>
+        
+        <!-- Hidden admin activation button (triple-click the header to show admin panel) -->
+        <div style="text-align: center; margin: 10px 0;">
+            <small style="color: #999; cursor: pointer;" onclick="if(event.detail === 3) toggleAdminMode()" title="Triple-click to toggle admin mode">v2.0</small>
+        </div>
+
+        <!-- Admin Notice -->
+        <div id="adminNotice" class="admin-notice">
+            🔧 Admin Mode Active - You have access to data management functions
+        </div>
+
+        <!-- Admin Controls -->
+        <div id="adminControls" class="admin-controls">
+            <h3>Admin Controls</h3>
+            <div style="margin-top: 15px;">
+                <label for="fileInput" style="display: block; margin-bottom: 10px; font-weight: 600;">Upload New Data:</label>
+                <input type="file" id="fileInput" accept=".csv,.json">
+                <button class="admin-btn" onclick="processUploadedFile()">📤 Upload Data</button>
+            </div>
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                <button class="admin-btn" onclick="exportData()">📊 Export Current Data</button>
+                <button class="admin-btn" onclick="clearAllData()">🗑️ Clear All Data</button>
+                <button class="admin-btn" onclick="refreshData()">🔄 Refresh Data</button>
+                <button class="admin-btn" onclick="toggleEditMode()">✏️ Edit Mode</button>
+                <button class="admin-btn" onclick="toggleAdminMode()" style="background: var(--danger-color);">🔒 Hide Admin Panel</button>
+            </div>
+        </div>
 
         <!-- Filter Controls -->
         <div class="filter-container">
@@ -3717,6 +3794,108 @@
         
         let currentAreaRankings = {};
         let previousAreaRankings = {};
+        let isAdminUser = false;
+
+        // Check for admin access on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAdminAccess();
+        });
+
+        function checkAdminAccess() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Multiple ways to enable admin mode:
+            // 1. URL parameter ?admin=1
+            // 2. Running locally (file:// protocol)
+            // 3. Specific domains/users (you can customize this)
+            // 4. localStorage flag (persistent admin mode)
+            
+            isAdminUser = 
+                urlParams.get('admin') === '1' || 
+                window.location.protocol === 'file:' || // Auto-admin when running locally
+                window.location.hostname === 'localhost' || // Auto-admin on localhost
+                window.location.hostname === '127.0.0.1' || // Auto-admin on 127.0.0.1
+                localStorage.getItem('adminMode') === 'true'; // Persistent admin mode
+            
+            if (isAdminUser) {
+                document.getElementById('adminNotice').style.display = 'block';
+                document.getElementById('adminControls').classList.add('active');
+                // Store admin mode in localStorage for persistence
+                localStorage.setItem('adminMode', 'true');
+            }
+        }
+        
+        // Function to toggle admin mode on/off
+        function toggleAdminMode() {
+            if (isAdminUser) {
+                localStorage.removeItem('adminMode');
+                isAdminUser = false;
+                document.getElementById('adminNotice').style.display = 'none';
+                document.getElementById('adminControls').classList.remove('active');
+            } else {
+                localStorage.setItem('adminMode', 'true');
+                isAdminUser = true;
+                document.getElementById('adminNotice').style.display = 'block';
+                document.getElementById('adminControls').classList.add('active');
+            }
+        }
+
+        function processUploadedFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a file to upload');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                if (file.name.endsWith('.json')) {
+                    try {
+                        const newData = JSON.parse(content);
+                        // Merge or replace data
+                        Object.assign(storeData, newData);
+                        alert('Data uploaded successfully!');
+                        location.reload();
+                    } catch (err) {
+                        alert('Error parsing JSON: ' + err.message);
+                    }
+                } else if (file.name.endsWith('.csv')) {
+                    // Process CSV
+                    alert('CSV processing would be implemented here');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(storeData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = 'incentive_data_' + new Date().toISOString().split('T')[0] + '.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        function refreshData() {
+            location.reload();
+        }
+
+        function toggleEditMode() {
+            alert('Edit mode would allow inline editing of values');
+        }
 
         function filterByAM() {
             const selectedAM = document.getElementById('amFilter').value;
