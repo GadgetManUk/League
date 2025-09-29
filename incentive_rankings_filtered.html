@@ -5,7 +5,267 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Incentive Rankings Dashboard - Dynamic Filtering</title>
     <style>
-        /* Original styles remain the same */
+        :root {
+            --primary-color: #007AFF;
+            --primary-dark: #0056b3;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --light-bg: #f8f9fa;
+            --dark-text: #1d1d1f;
+            --light-text: #666;
+            --border-color: #e9ecef;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --shadow-hover: 0 6px 25px rgba(0,0,0,0.12);
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark-text);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .filter-notice {
+            background: linear-gradient(45deg, var(--primary-color), var(--info-color));
+            color: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin: 10px 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .admin-notice {
+            background: linear-gradient(45deg, var(--success-color), #1e7e34);
+            color: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin: 10px 0;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .admin-controls {
+            background: var(--light-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin: 20px 0;
+            display: none;
+        }
+
+        .admin-controls h3 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .admin-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            margin: 5px;
+            font-size: 1em;
+            transition: var(--transition);
+        }
+
+        .admin-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .filter-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: var(--light-bg);
+            border-radius: var(--border-radius);
+        }
+
+        .filter-group select {
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            margin-left: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--light-text);
+            font-size: 0.9em;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .card h2 {
+            padding: 20px;
+            margin: 0;
+            background: var(--light-bg);
+            color: var(--primary-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: var(--light-bg);
+        }
+
+        .rank-cell {
+            width: 80px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .movement-cell {
+            width: 100px;
+            text-align: center;
+        }
+
+        .movement-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .movement-up {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success-color);
+        }
+
+        .movement-down {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger-color);
+        }
+
+        .movement-same {
+            background: var(--light-bg);
+            color: var(--light-text);
+        }
+
+        .location-cell {
+            font-weight: 600;
+        }
+
+        .am-cell {
+            color: var(--info-color);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .admin-controls button {
+                width: 100%;
+                margin: 5px 0;
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+
+            th, td {
+                padding: 10px 5px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -171,29 +431,69 @@
             const file = fileInput.files[0];
             
             if (!file) {
-                alert('Please select a file to upload');
+                alert('Please select a file');
                 return;
             }
             
             const reader = new FileReader();
             reader.onload = function(e) {
                 const content = e.target.result;
-                if (file.name.endsWith('.json')) {
-                    try {
+                try {
+                    if (file.name.endsWith('.json')) {
+                        // Handle JSON upload
                         const newData = JSON.parse(content);
                         Object.assign(storeData, newData);
-                        localStorage.setItem('storeData', JSON.stringify(storeData));
-                        alert('JSON data uploaded successfully!');
-                        location.reload();
-                    } catch (err) {
-                        alert('Error parsing JSON: ' + err.message);
-                    }
-                } else if (file.name.endsWith('.csv')) {
-                    try {
-                        // Process CSV
+                    } else if (file.name.endsWith('.csv')) {
+                        // Handle CSV upload
                         const lines = content.split('\n');
                         const headers = lines[0].split(',').map(h => h.trim());
                         
+                        if (!headers.includes('Store') || !headers.includes('AM') || !headers.includes('Incentive') || !headers.includes('Points')) {
+                            alert('CSV must have Store, AM, Incentive, and Points columns');
+                            return;
+                        }
+                        
+                        const storeIndex = headers.indexOf('Store');
+                        const amIndex = headers.indexOf('AM');
+                        const incentiveIndex = headers.indexOf('Incentive');
+                        const pointsIndex = headers.indexOf('Points');
+                        
+                        // Process each line
+                        for (let i = 1; i < lines.length; i++) {
+                            const line = lines[i].trim();
+                            if (!line) continue;
+                            
+                            const values = line.split(',').map(v => v.trim());
+                            const store = values[storeIndex];
+                            const am = values[amIndex];
+                            const incentive = values[incentiveIndex];
+                            const points = parseInt(values[pointsIndex]);
+                            
+                            if (!store || !am || !incentive || isNaN(points)) continue;
+                            
+                            if (!storeData[store]) {
+                                storeData[store] = {
+                                    am: am,
+                                    points: {},
+                                    originalRank: Object.keys(storeData).length + 1,
+                                    originalMovement: 0
+                                };
+                            }
+                            
+                            storeData[store].points[incentive] = points;
+                        }
+                    }
+                    
+                    // Save and update
+                    localStorage.setItem('storeData', JSON.stringify(storeData));
+                    setupAMFilter();
+                    updateTable();
+                    alert('Data processed successfully!');
+                } catch (error) {
+                    alert('Error processing file: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
                         // Validate headers
                         if (!headers.includes('Store') || !headers.includes('AM') || !headers.includes('Incentive')) {
                             alert('CSV must have Store, AM, and Incentive columns');
